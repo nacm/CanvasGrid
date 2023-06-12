@@ -18,6 +18,9 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
     };
     currentPage = 1;
     filteredRecordCount?: number;
+    setSelectedRecords = (ids: string[]): void => {
+        this.context.parameters.records.setSelectedRecordIds(ids);
+    };
 
     /**
      * Empty constructor.
@@ -95,6 +98,7 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
                 itemsLoading: dataset.loading,
                 highlightValue: this.context.parameters.HighlightValue.raw,
                 highlightColor: this.context.parameters.HighlightColor.raw,
+                setSelectedRecords: this.setSelectedRecords,
             }),
             this.container
         );

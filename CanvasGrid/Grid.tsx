@@ -16,6 +16,9 @@ import { StickyPositionType } from '@fluentui/react/lib/Sticky';
 import { IObjectWithKey } from '@fluentui/react/lib/Selection';
 import { IRenderFunction } from '@fluentui/react/lib/Utilities';
 import * as React from 'react';
+import { useConst, useForceUpdate } from '@fluentui/react-hooks';
+import { Selection } from '@fluentui/react/lib/Selection';
+import { SelectionMode } from '@fluentui/react/lib/Utilities';
 
 type DataSet = ComponentFramework.PropertyHelper.DataSetApi.EntityRecord & IObjectWithKey;
 
@@ -35,6 +38,8 @@ export interface GridProps {
     itemsLoading: boolean;
     highlightValue: string | null;
     highlightColor: string | null;
+    setSelectedRecords: (ids: string[]) => void;
+    onNavigate: (item?: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord) => void;
 }
 
 const onRenderDetailsHeader: IRenderFunction<IDetailsHeaderProps> = (props, defaultRender) => {
@@ -74,7 +79,27 @@ export const Grid = React.memo((props: GridProps) => {
         filtering,
         currentPage,
         itemsLoading,
+        setSelectedRecords,
     } = props;
+
+    const forceUpdate = useForceUpdate();
+    const onSelectionChanged = React.useCallback(() => {
+    const items = selection.getItems() as DataSet[];
+    const selected = selection.getSelectedIndices().map((index: number) => {
+        const item: DataSet | undefined = items[index];
+        return item && items[index].getRecordId();
+    });
+
+    setSelectedRecords(selected);
+    forceUpdate();
+    }, [forceUpdate]);
+
+    const selection: Selection = useConst(() => {
+    return new Selection({
+        selectionMode: SelectionMode.single,
+        onSelectionChanged: onSelectionChanged,
+    });
+    });
 
     const [isComponentLoading, setIsLoading] = React.useState<boolean>(false);
 
@@ -133,6 +158,7 @@ export const Grid = React.memo((props: GridProps) => {
                         checkButtonAriaLabel="select row"
                         layoutMode={DetailsListLayoutMode.fixedColumns}
                         constrainMode={ConstrainMode.unconstrained}
+                        selection={selection}
                     ></DetailsList>
                 </ScrollablePane>
                 {(itemsLoading || isComponentLoading) && <Overlay />}
