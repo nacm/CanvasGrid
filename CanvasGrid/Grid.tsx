@@ -80,6 +80,7 @@ export const Grid = React.memo((props: GridProps) => {
         currentPage,
         itemsLoading,
         setSelectedRecords,
+        onNavigate,
     } = props;
 
     const forceUpdate = useForceUpdate();
