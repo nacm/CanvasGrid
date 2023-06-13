@@ -4,6 +4,9 @@ import {
     DetailsListLayoutMode,
     IColumn,
     IDetailsHeaderProps,
+    IDetailsListProps,
+    IDetailsRowStyles,
+    DetailsRow
 } from '@fluentui/react/lib/DetailsList';
 import { Overlay } from '@fluentui/react/lib/Overlay';
 import { 
@@ -106,6 +109,8 @@ export const Grid = React.memo((props: GridProps) => {
         loadPreviousPage,
         onFullScreen,
         isFullScreen,
+        highlightValue,
+        highlightColor,
     } = props;
 
     const forceUpdate = useForceUpdate();
@@ -227,6 +232,21 @@ const onColumnClick = React.useCallback(
         return sortedRecords;
     }, [records, sortedRecordIds, hasNextPage, setIsLoading]);
 
+    const onNextPage = React.useCallback(() => {
+      setIsLoading(true);
+      loadNextPage();
+  }, [loadNextPage, setIsLoading]);
+
+  const onPreviousPage = React.useCallback(() => {
+      setIsLoading(true);
+      loadPreviousPage();
+  }, [loadPreviousPage, setIsLoading]);
+
+  const onFirstPage = React.useCallback(() => {
+      setIsLoading(true);
+      loadFirstPage();
+  }, [loadFirstPage, setIsLoading]);
+
     const gridColumns = React.useMemo(() => {
         return columns
             .filter((col) => !col.isHidden && col.order >= 0)
@@ -259,6 +279,19 @@ const onColumnClick = React.useCallback(
         };
     }, [width, height]);
 
+    //highlight the selected row
+    const onRenderRow: IDetailsListProps['onRenderRow'] = (props) => {
+        const customStyles: Partial<IDetailsRowStyles> = {};
+        if (props && props.item) {
+            const item = props.item as DataSet | undefined;
+            if (highlightColor && highlightValue && item?.getValue('HighlightIndicator') == highlightValue) {
+                customStyles.root = { backgroundColor: highlightColor };
+            }
+            return <DetailsRow {...props} styles={customStyles} />;
+        }
+        return null;
+    };
+
     return (
         <Stack verticalFill grow style={rootContainerStyle}>
             <Stack.Item grow style={{ position: 'relative', backgroundColor: 'white' }}>
@@ -275,6 +308,7 @@ const onColumnClick = React.useCallback(
                         constrainMode={ConstrainMode.unconstrained}
                         selection={selection}
                         onItemInvoked={onNavigate}
+                        onRenderRow={onRenderRow}
                     ></DetailsList>
                     {contextualMenuProps && <ContextualMenu {...contextualMenuProps} />}
                 </ScrollablePane>
@@ -290,14 +324,14 @@ const onColumnClick = React.useCallback(
                     <IconButton
                     alt="First Page"
                     iconProps={{ iconName: 'Rewind' }}
-                    disabled={!hasPreviousPage}
-                    onClick={loadFirstPage}
+                    disabled={!hasPreviousPage || isComponentLoading || itemsLoading}
+                    onClick={onFirstPage}
                     />
                     <IconButton
                     alt="Previous Page"
                     iconProps={{ iconName: 'Previous' }}
-                    disabled={!hasPreviousPage}
-                    onClick={loadPreviousPage}
+                    disabled={!hasPreviousPage || isComponentLoading || itemsLoading}
+                    onClick={onPreviousPage}
                     />
                     <Stack.Item align="center">
                     {stringFormat(
@@ -309,8 +343,8 @@ const onColumnClick = React.useCallback(
                     <IconButton
                     alt="Next Page"
                     iconProps={{ iconName: 'Next' }}
-                    disabled={!hasNextPage}
-                    onClick={loadNextPage}
+                    disabled={!hasNextPage || isComponentLoading || itemsLoading}
+                    onClick={onNextPage}
                     />
                 </Stack>
             </Stack.Item>

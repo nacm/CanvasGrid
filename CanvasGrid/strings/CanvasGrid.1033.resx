@@ -157,7 +157,7 @@
     <value>Page {0} ({1} Selected)</value>
     <comment/>
   </data>
-  <data name="Label_SortAZ&#x9;" xml:space="preserve">
+  <data name="Label_SortAZ" xml:space="preserve">
     <value>A to Z</value>
     <comment/>
   </data>
@@ -165,8 +165,12 @@
     <value>Z to A</value>
     <comment/>
   </data>
-  <data name="Label_DoesNotContainData&#x9;" xml:space="preserve">
+  <data name="Label_DoesNotContainData" xml:space="preserve">
     <value>Does not contain data</value>
+    <comment/>
+  </data>
+  <data name="Label_ShowFullScreen" xml:space="preserve">
+    <value>Show Full Screen</value>
     <comment/>
   </data>
 </root>
