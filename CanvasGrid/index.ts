@@ -18,6 +18,7 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
     };
     currentPage = 1;
     filteredRecordCount?: number;
+    isFullScreen = false;
     setSelectedRecords = (ids: string[]): void => {
         this.context.parameters.records.setSelectedRecordIds(ids);
     };
@@ -28,7 +29,52 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
           this.context.parameters.records.openDatasetItem(item.getNamedReference());
         }
       };
+      //on sort
+      onSort = (name: string, desc: boolean): void => {
+        const sorting = this.context.parameters.records.sorting;
+        while (sorting.length > 0) {
+          sorting.pop();
+        }
+        this.context.parameters.records.sorting.push({
+          name: name,
+          sortDirection: desc ? 1 : 0,
+        });
+        this.context.parameters.records.refresh();
+      };
+      //on filter
+      onFilter = (name: string, filter: boolean): void => {
+        const filtering = this.context.parameters.records.filtering;
+        if (filter) {
+          filtering.setFilter({
+            conditions: [
+              {
+                attributeName: name,
+                conditionOperator: 12, // Does not contain Data
+              },
+            ],
+          } as ComponentFramework.PropertyHelper.DataSetApi.FilterExpression);
+        } else {
+          filtering.clearFilter();
+        }
+        this.context.parameters.records.refresh();
+      };
 
+      loadFirstPage = (): void => {
+        this.currentPage = 1;
+        this.context.parameters.records.paging.loadExactPage(1);
+      };
+      loadNextPage = (): void => {
+        this.currentPage++;
+        this.context.parameters.records.paging.loadExactPage(this.currentPage);
+      };
+      loadPreviousPage = (): void => {
+        this.currentPage--;
+        this.context.parameters.records.paging.loadExactPage(this.currentPage);
+      };
+      //Full screen
+      onFullScreen = (): void => {
+        this.context.mode.setFullScreen(true);
+      };
     /**
      * Empty constructor.
      */
@@ -71,6 +117,13 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
             !dataset.loading &&
             !dataset.paging.hasPreviousPage &&
             this.currentPage !== 1;
+        
+            if (context.updatedProperties.indexOf('fullscreen_close') > -1) {
+                this.isFullScreen = false;
+            }
+            if (context.updatedProperties.indexOf('fullscreen_open') > -1) {
+                this.isFullScreen = true;
+            }
     
         if (resetPaging) {
             this.currentPage = 1;
@@ -87,6 +140,11 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
         const allocatedHeight = parseInt(
             context.mode.allocatedHeight as unknown as string
         );
+        //Update the FilteredRecordCount output property
+        if (this.filteredRecordCount !== this.sortedRecordsIds.length) {
+            this.filteredRecordCount = this.sortedRecordsIds.length;
+            this.notifyOutputChanged();
+        }
     
         ReactDOM.render(
             React.createElement(Grid, {
@@ -107,6 +165,13 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
                 highlightColor: this.context.parameters.HighlightColor.raw,
                 setSelectedRecords: this.setSelectedRecords,
                 onNavigate: this.onNavigate,
+                onSort: this.onSort,
+                onFilter: this.onFilter,
+                loadFirstPage: this.loadFirstPage,
+                loadNextPage: this.loadNextPage,
+                loadPreviousPage: this.loadPreviousPage,
+                isFullScreen: this.isFullScreen,
+                onFullScreen: this.onFullScreen,
             }),
             this.container
         );
@@ -116,9 +181,12 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
      * It is called by the framework prior to a control receiving new data.
      * @returns an object based on nomenclature defined in manifest, expecting object[s] for property marked as “bound” or “output”
      */
+    //Add FilteredRecordCount to getOutputs
     public getOutputs(): IOutputs
     {
-        return {};
+        return {
+            FilteredRecordCount: this.filteredRecordCount,
+        } as IOutputs;
     }
 
     /**

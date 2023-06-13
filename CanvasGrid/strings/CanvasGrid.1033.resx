@@ -169,8 +169,4 @@
     <value>Does not contain data</value>
     <comment/>
   </data>
-  <data name="Label_ShowFullScreen" xml:space="preserve">
-    <value>Show Full Screen</value>
-    <comment/>
-  </data>
 </root>
