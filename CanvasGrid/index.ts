@@ -21,6 +21,13 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
     setSelectedRecords = (ids: string[]): void => {
         this.context.parameters.records.setSelectedRecordIds(ids);
     };
+    onNavigate = (
+        item?: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord
+      ): void => {
+        if (item) {
+          this.context.parameters.records.openDatasetItem(item.getNamedReference());
+        }
+      };
 
     /**
      * Empty constructor.
@@ -99,6 +106,7 @@ export class CanvasGrid implements ComponentFramework.StandardControl<IInputs, I
                 highlightValue: this.context.parameters.HighlightValue.raw,
                 highlightColor: this.context.parameters.HighlightColor.raw,
                 setSelectedRecords: this.setSelectedRecords,
+                onNavigate: this.onNavigate,
             }),
             this.container
         );

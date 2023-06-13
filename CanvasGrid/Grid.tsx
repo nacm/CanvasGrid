@@ -160,6 +160,7 @@ export const Grid = React.memo((props: GridProps) => {
                         layoutMode={DetailsListLayoutMode.fixedColumns}
                         constrainMode={ConstrainMode.unconstrained}
                         selection={selection}
+                        onItemInvoked={onNavigate}
                     ></DetailsList>
                 </ScrollablePane>
                 {(itemsLoading || isComponentLoading) && <Overlay />}
